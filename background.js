@@ -12,10 +12,15 @@ function buttonClicked() {
 function handleInstalled(details) {
 	if(details.reason=="install") {
 		browser.storage.local.set({
-            settings: {
-                baseurl: 'https://jenkins.io/'
-            }
-        });
+            		settings: {
+                		baseurl: 'https://jenkins.io/',
+				jobs: {
+					job: {
+						name: 'Example';
+					}
+				}
+            		}
+        	});
 	}
 }
 
