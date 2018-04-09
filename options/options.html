@@ -7,14 +7,17 @@
 	<body>
 		<h2>Options</h2>
 		<form class="optionsForm">
-			<label id="baseurl_label">
-				URL of your Jenkins installation;
-			</label>
+			<label id="baseurl_label">URL of your Jenkins installation</label>
 			<input type="text" id="baseurl" size="60" />
+			<label id="updateinterval_label">Update Interval (minutes)</label>
+			<input type="number" id="updateinterval" />
 			<label id="jobs_label">Jenkins Job Names</label>
 			<div id="jobs">
-				<span id="jobAdder">Add Job</span>
-				<span id="jobRemover">Remove Job</span>
+				<div id="jobController">
+					<div id="jobAdder">Add Job</div>
+					<div id="jobRemover">Remove Job</div>
+				</div>
+				<br />
 			</div>
 			<button type="submit" id="savebutton">Save</button>
 		</form>

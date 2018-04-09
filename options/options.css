@@ -15,18 +15,22 @@
 	float : left;
 	text-align : left;
 	padding-right : 1em;
+	height: 20px;
+	font-size: 20px;
+	padding: 10px 0;
 }
 
-.optionsForm > input{
+.optionsForm  input {
 	grid-column: 2;
 	grid-row: auto;
 	text-align : left;
+	height: 40px;
 }
 
 button {
 	grid-column: 2;
 	grid-row: auto;
-	min-height: 30px;
+	min-height: 40px;
 	border-radius: 2px;
 	text-shadow: none;
 }
@@ -38,3 +42,22 @@ button {
 	border-bottom: 1px solid #c1c1c1;
 }
 
+#jobController {
+	width: 100%;
+	display: flex;
+}
+
+#jobAdder, #jobRemover {
+	width: 45%;
+	margin: 0 2.5%;
+	height: 20px;
+	text-align: center;
+	font-size: 20px;
+	padding: 10px 0;
+	border: 1px solid black;
+	border-radius: 5px;
+}
+
+.jobinput {
+	width: 100%;
+}
