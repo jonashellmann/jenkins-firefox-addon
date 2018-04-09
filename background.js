@@ -6,33 +6,115 @@ function buttonClicked() {
 		if(baseurl === 'https://jenkins.io/') {
 			browser.runtime.openOptionsPage();
 		}
+		else {
+			// TODO: If build is red, then open this build
+			var querying = browser.tabs.query({url: baseurl + "*"});
+            querying.then((tab) => {
+                if(tab.length > 0) {
+                    browser.tabs.update(tab[0].id, { active: true })
+                } else {
+                    browser.tabs.create({url: baseurl, active: true});
+                }});
+		}
 	});
 }
 
 function handleInstalled(details) {
-	if(details.reason=="install") {
+	if(details.reason == "install") {
 		browser.storage.local.set({
-            		settings: {
-                		baseurl: 'https://jenkins.io/',
-				jobs: [
-					{
-						name: 'Example';
-					}
-				]
-            		}
-        	});
+			settings: {
+				baseurl: 'https://jenkins.io/',
+				updateinterval: 1,
+				jobs: [ ]
+			},
+        });
 	}
 }
 
 function onUpdateSettings(settings) {
-	if(settings.baseurl !== 'https://jenkins.io/') {
-		browser.browserAction.setPopup({popup: settings.baseurl});
-	}
-	else {
-		browser.browserAction.setPopup({popup: ''});
-	}
-    
+	browser.alarms.clear("check");
+    var interval = settings.updateinterval;
+    browser.alarms.create("check", {delayInMinutes:interval, periodInMinutes:interval});
+	browser.alarms.onAlarm.addListener(check);
+	check();
 }
+
+async function check(){
+	var getSettings = browser.storage.local.get("settings");
+	getSettings.then((res) => {
+		const {settings} = res;
+		var baseurl = settings.baseurl;
+		
+		if(baseurl !== 'https://jenkins.io/') {
+			
+			browser.browserAction.setIcon({path: "images/success.png"});
+			var jobs = settings.jobs;
+			
+			if (jobs.length > 0) {
+				checkJob(jobs, 0, baseurl);
+			}
+			
+		}
+	});
+}
+
+function checkJob(jobs, jobIndex, baseurl) {
+	if(jobIndex < jobs.length) {
+		var job = jobs[jobIndex];
+		var requesturl = baseurl + "job/" + job.name + "/api/json";
+		var init = { method: 'GET' };
+		var request = new Request(requesturl, init);
+		fetch(request).then(analyzeJob).catch(handleError);
+		checkJob(jobs, jobIndex + 1, baseurl);
+	}
+}
+
+function analyzeJob(response) {
+	if(response.status == "200") {
+        response.text().then((body) => {
+			var json = JSON.parse(body);
+            var latestBuildURL = json.builds[0].url;
+			var requesturl = latestBuildURL + "api/json";
+			var init = { method: 'GET' };
+			var request = new Request(requesturl, init);
+			fetch(request).then(analyzeBuild).catch(handleError);
+        });
+    } 
+	else {
+		browser.browserAction.setIcon({path: "images/error.png"});
+    }
+}
+
+function analyzeBuild(response) {
+	if(response.ok) {
+        response.text().then((body) => {
+			var json = JSON.parse(body);
+            if(json.building) {
+				var buildnumber = json.number;
+				var prevBuildNumber = buildnumber - 1;
+				var buildurl = json.url;
+				var prevBuildurl = buildurl.replace(buildnumber.toString(), prevBuildNumber.toString());
+				var init = { method: 'GET' };
+				var request = new Request(prevBuildurl, init);
+				fetch(request).then(analyzeBuild).catch(handleError);
+			}
+			else {
+				var result = json.result;
+				if(result !== "SUCCESS") {
+					browser.browserAction.setIcon({path: "images/failure.png"});
+				}
+			}
+        });
+    } 
+	else {
+        return false;
+    }
+}
+
+function handleError(error) {
+	console.log(error);
+    browser.browserAction.setIcon({path: "images/error.png"});
+};
 
 browser.browserAction.onClicked.addListener(buttonClicked);
 browser.runtime.onInstalled.addListener(handleInstalled);
@@ -44,6 +126,6 @@ browser.runtime.onMessage.addListener(msg => {
 });
 var getSettings = browser.storage.local.get("settings"); 
 getSettings.then((res) => { 
-	const {settings} = res; 
+	const {settings} = res;
 	onUpdateSettings(settings); 
 });
