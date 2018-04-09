@@ -14,11 +14,11 @@ function handleInstalled(details) {
 		browser.storage.local.set({
             		settings: {
                 		baseurl: 'https://jenkins.io/',
-				jobs: {
-					job: {
+				jobs: [
+					{
 						name: 'Example';
 					}
-				}
+				]
             		}
         	});
 	}
