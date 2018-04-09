@@ -35,9 +35,12 @@ function saveOptions(e) {
 		}
 	};
 
-	// Add jobs here dynamically
-	// https://stackoverflow.com/questions/2250953/how-do-i-create-javascript-array-json-format-dynamically
-	    
+	for (input in document.getElementsByClassName('job')) {
+		settings.settings.jobs.push({
+			name: input.value;
+		});
+	}
+
 	var result = browser.storage.local.set(settings);
 	browser.runtime.sendMessage({
 		type: "settings-updated",
