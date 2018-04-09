@@ -39,21 +39,24 @@ function onUpdateSettings(settings) {
 	check();
 }
 
-async function check(){
+function check(){
 	var getSettings = browser.storage.local.get("settings");
 	getSettings.then((res) => {
 		const {settings} = res;
 		var baseurl = settings.baseurl;
 		
-		if(baseurl !== 'https://jenkins.io/') {
-			
-			browser.browserAction.setIcon({path: "images/success.png"});
+		if(baseurl !== 'https://jenkins.io/') {		
+			browser.browserAction.setIcon({path: "images/success.png"}));
+			browser.browserAction.setBadgeText(text: "0");
 			var jobs = settings.jobs;
-			
 			if (jobs.length > 0) {
 				checkJob(jobs, 0, baseurl);
 			}
-			
+			var gettingBadgeText = browser.browserAction.getBadgeText({});
+			gettingBadgeText.then(function(text) {
+				var totalJobs = settings.jobs.length;
+				browser.browserAction.setBadgeText(text: text + " / " + totalJobs.toString());
+			});
 		}
 	});
 }
@@ -72,12 +75,12 @@ function checkJob(jobs, jobIndex, baseurl) {
 function analyzeJob(response) {
 	if(response.status == "200") {
         response.text().then((body) => {
-			var json = JSON.parse(body);
-            var latestBuildURL = json.builds[0].url;
-			var requesturl = latestBuildURL + "api/json";
-			var init = { method: 'GET' };
-			var request = new Request(requesturl, init);
-			fetch(request).then(analyzeBuild).catch(handleError);
+		var json = JSON.parse(body);
+		var latestBuildURL = json.builds[0].url;
+		var requesturl = latestBuildURL + "api/json";
+		var init = { method: 'GET' };
+		var request = new Request(requesturl, init);
+		fetch(request).then(analyzeBuild).catch(handleError);
         });
     } 
 	else {
@@ -87,9 +90,9 @@ function analyzeJob(response) {
 
 function analyzeBuild(response) {
 	if(response.ok) {
-        response.text().then((body) => {
+		response.text().then((body) => {
 			var json = JSON.parse(body);
-            if(json.building) {
+			if(json.building) {
 				var buildnumber = json.number;
 				var prevBuildNumber = buildnumber - 1;
 				var buildurl = json.url;
@@ -102,6 +105,12 @@ function analyzeBuild(response) {
 				var result = json.result;
 				if(result !== "SUCCESS") {
 					browser.browserAction.setIcon({path: "images/failure.png"});
+					var gettingBadgeText = browser.browserAction.getBadgeText({});
+					gettingBadgeText.then(function(text){
+						var failingBuilds = parseInt(text, 10);
+						failingBuilds++;
+						browser.browserAction.setBadgeText({text: failingBuilds.toString());
+					});
 				}
 			}
         });
