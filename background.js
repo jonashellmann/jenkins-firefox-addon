@@ -49,9 +49,11 @@ function check(){
 			browser.browserAction.setIcon({path: "images/success.png"}));
 			browser.browserAction.setBadgeText(text: "0");
 			var jobs = settings.jobs;
-			if (jobs.length > 0) {
-				checkJob(jobs, 0, baseurl);
+			
+			for (var i = 0; i < jobs.length; i++) {
+				checkJob(job, baseurl);
 			}
+			
 			var gettingBadgeText = browser.browserAction.getBadgeText({});
 			gettingBadgeText.then(function(text) {
 				var totalJobs = settings.jobs.length;
@@ -61,25 +63,18 @@ function check(){
 	});
 }
 
-function checkJob(jobs, jobIndex, baseurl) {
-	if(jobIndex < jobs.length) {
-		var job = jobs[jobIndex];
-		var requesturl = baseurl + "job/" + job.name + "/api/json";
-		var init = { method: 'GET' };
-		var request = new Request(requesturl, init);
-		fetch(request).then(analyzeJob).catch(handleError);
-		checkJob(jobs, jobIndex + 1, baseurl);
-	}
+function checkJob(job, baseurl) {
+	var requesturl = baseurl + "job/" + job.name + "/api/json";
+	var request = new Request(requesturl, { method: 'GET' });
+	fetch(request).then(analyzeJob).catch(handleError);
 }
 
 function analyzeJob(response) {
 	if(response.status == "200") {
         response.text().then((body) => {
 		var json = JSON.parse(body);
-		var latestBuildURL = json.builds[0].url;
-		var requesturl = latestBuildURL + "api/json";
-		var init = { method: 'GET' };
-		var request = new Request(requesturl, init);
+		var requesturl = json.builds[0].url + "api/json";
+		var request = new Request(requesturl, { method: 'GET' });
 		fetch(request).then(analyzeBuild).catch(handleError);
         });
     } 
@@ -97,8 +92,7 @@ function analyzeBuild(response) {
 				var prevBuildNumber = buildnumber - 1;
 				var buildurl = json.url;
 				var prevBuildurl = buildurl.replace(buildnumber.toString(), prevBuildNumber.toString());
-				var init = { method: 'GET' };
-				var request = new Request(prevBuildurl, init);
+				var request = new Request(prevBuildurl, { method: 'GET' });
 				fetch(request).then(analyzeBuild).catch(handleError);
 			}
 			else {
@@ -109,20 +103,21 @@ function analyzeBuild(response) {
 					gettingBadgeText.then(function(text){
 						var failingBuilds = parseInt(text, 10);
 						failingBuilds++;
-						browser.browserAction.setBadgeText({text: failingBuilds.toString());
+						browser.browserAction.setBadgeText({text: failingBuilds.toString()});
 					});
 				}
 			}
-        });
-    } 
+        	});
+    	}	 
 	else {
-        return false;
-    }
+        	return false;
+    	}
 }
 
 function handleError(error) {
 	console.log(error);
-    browser.browserAction.setIcon({path: "images/error.png"});
+	browser.browserAction.setIcon({path: "images/error.png"});
+	browser.browserAction.setBadgeText({text: ''});
 };
 
 browser.browserAction.onClicked.addListener(buttonClicked);
