@@ -12,6 +12,7 @@
 	},
 
 	"browser_action": {
+		"browser_style": false,
 		"default_icon": "images/jenkins-32.png",
 		"default_title": "Jenkins Build Watcher"
 	},
@@ -23,7 +24,9 @@
 	"permissions": [
 		"<all_urls>",
 		"tabs",
-		"storage"
+		"storage",
+		"alarms",
+		"notifications"
 	],
 	
 	"options_ui": { 
