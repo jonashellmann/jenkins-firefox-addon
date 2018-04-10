@@ -46,8 +46,8 @@ function check(){
 		var baseurl = settings.baseurl;
 		
 		if(baseurl !== 'https://jenkins.io/') {		
-			browser.browserAction.setIcon({path: "images/success.png"}));
-			browser.browserAction.setBadgeText(text: "0");
+			browser.browserAction.setIcon({path: "images/success.png"});
+			browser.browserAction.setBadgeText({text: "0"});
 			var jobs = settings.jobs;
 			
 			for (var i = 0; i < jobs.length; i++) {
@@ -57,7 +57,7 @@ function check(){
 			var gettingBadgeText = browser.browserAction.getBadgeText({});
 			gettingBadgeText.then(function(text) {
 				var totalJobs = settings.jobs.length;
-				browser.browserAction.setBadgeText(text: text + " / " + totalJobs.toString());
+				browser.browserAction.setBadgeText({text: text + " / " + totalJobs.toString()});
 			});
 		}
 	});
