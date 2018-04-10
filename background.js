@@ -131,5 +131,15 @@ browser.runtime.onMessage.addListener(msg => {
 var getSettings = browser.storage.local.get("settings"); 
 getSettings.then((res) => { 
 	const {settings} = res;
-	onUpdateSettings(settings); 
+	if(settings == 'undefined') {
+		handleInstalled({details: {reason: 'install'}});
+		var getNewSettings = browser.storage.local.get("settings");
+		getNewSettings.then((newRes) => {
+			const {newSettings} = newRes;
+			onUpdateSettings(newSettings);
+		});
+	}
+	else {
+		onUpdateSettings(settings); 
+	}
 });
