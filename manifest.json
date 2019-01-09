@@ -1,7 +1,7 @@
 {
 	"manifest_version": 2,
 	"name": "Jenkins Build Watcher",
-	"version": "0.0.2",
+	"version": "0.0.3",
 
 	"description": "A Firefox addon that shows the status of your Jenkins build.",
 
